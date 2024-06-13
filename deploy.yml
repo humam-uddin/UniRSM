@@ -1,0 +1,18 @@
+- name: Deploy Docker image to Ubuntu host
+  hosts: unirsm_host
+  become: yes  # Necessary to have root privileges
+
+  tasks:
+    - name: Transfer Docker image tar file to target host
+      ansible.builtin.copy:
+        src: unirsm.tar
+        dest: /tmp/unirsm.tar
+
+    - name: Import Docker image on target host
+      ansible.builtin.shell: docker import /tmp/unirsm.tar unirsm
+      args:
+        chdir: /tmp/
+
+    - name: Run Docker container UniStudio
+      ansible.builtin.shell: >
+        docker run -v /etc/localtime:/etc/localtime:ro -d --net=host --restart=always -tid --name UniRSM --privileged=true unirsm /sbin/init
